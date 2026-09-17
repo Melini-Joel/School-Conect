@@ -6,7 +6,7 @@ export default async function Home() {
   const usuarios = await obtenerUsuarios();
 
   return (
-    <main className="flex flex-col items-center text-center px-6 py-24 bg-gradient-to-b from-indigo-50 via-slate-50 to-white">
+    <main className="flex flex-col items-center text-center px-6 py-24 bg-gradient-to-b from-indigo-50 via-slate-50 to-white ">
       <span className="text-xs font-semibold text-indigo-500 bg-indigo-100 px-3 py-1 rounded-full mb-4">
         Proyecto escolar 2026
       </span>
