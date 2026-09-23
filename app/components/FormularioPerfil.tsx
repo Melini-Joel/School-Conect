@@ -26,7 +26,8 @@ export default function FormularioPerfil() {
     setError("");
     setGuardado(false);
 
-    const slug = nombre.toLowerCase().trim().replace(/\s+/g, "-");
+    const base = nombre.toLowerCase().trim().replace(/\s+/g, "-");
+    const slug = `${base}-${user.uid.slice(0, 6)}`;
 
     try {
       await setDoc(doc(db, "usuarios", user.uid), {

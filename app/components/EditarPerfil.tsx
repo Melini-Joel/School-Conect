@@ -18,6 +18,7 @@ type Props = {
 };
 
 export default function EditarPerfil({ usuario, onCerrar }: Props) {
+  const [nombre, setNombre] = useState(usuario.nombre);
   const [tipo, setTipo] = useState<Usuario["tipo"]>(usuario.tipo);
   const [bio, setBio] = useState(usuario.bio);
   const [email, setEmail] = useState(usuario.email ?? "");
@@ -43,12 +44,15 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
   const router = useRouter();
 
   async function guardarCambios() {
+    if (!nombre.trim()) return;
+
     setGuardando(true);
     setError("");
     setGuardado(false);
 
     try {
       await updateDoc(doc(db, "usuarios", usuario.uid), {
+        nombre,
         tipo,
         bio,
         email,
@@ -76,6 +80,13 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
   return (
     <div className="border rounded-xl p-4 bg-white flex flex-col gap-3">
       <h3 className="font-semibold text-sm">Mi perfil</h3>
+
+      <input
+        value={nombre}
+        onChange={(e) => setNombre(e.target.value)}
+        placeholder="Nombre"
+        className="border rounded-lg p-2 text-sm"
+      />
 
       <div className="flex bg-slate-100 rounded-lg p-1 text-sm font-medium">
         <button
