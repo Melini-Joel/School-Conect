@@ -39,30 +39,39 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
   );
   const [guardando, setGuardando] = useState(false);
   const [guardado, setGuardado] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
 
   async function guardarCambios() {
-  setGuardando(true);
-  await updateDoc(doc(db, "usuarios", usuario.uid), {
-    tipo,
-    bio,
-    email,
-    telefono,
-    ...(tipo === "busca-empleo" && {
-      experiencia,
-      estudios,
-      habilidades,
-      aniosExperiencia,
-      nivelEstudios,
-      disponibilidadHorario,
-      disponibleViajar,
-    }),
-  });
-  setGuardando(false);
-  setGuardado(true);
-  router.refresh();
-  onCerrar?.();
-}
+    setGuardando(true);
+    setError("");
+    setGuardado(false);
+
+    try {
+      await updateDoc(doc(db, "usuarios", usuario.uid), {
+        tipo,
+        bio,
+        email,
+        telefono,
+        ...(tipo === "busca-empleo" && {
+          experiencia,
+          estudios,
+          habilidades,
+          aniosExperiencia,
+          nivelEstudios,
+          disponibilidadHorario,
+          disponibleViajar,
+        }),
+      });
+      setGuardado(true);
+      router.refresh();
+      onCerrar?.();
+    } catch {
+      setError("No se pudieron guardar los cambios. Intentá de nuevo.");
+    } finally {
+      setGuardando(false);
+    }
+  }
 
   return (
     <div className="border rounded-xl p-4 bg-white flex flex-col gap-3">
@@ -208,6 +217,7 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
           </button>
         )}
         {guardado && <p className="text-green-600 text-sm">¡Guardado!</p>}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
       </div>
     </div>
   );

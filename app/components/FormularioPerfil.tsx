@@ -16,28 +16,35 @@ export default function FormularioPerfil() {
   const [habilidades, setHabilidades] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [guardado, setGuardado] = useState(false);
+  const [error, setError] = useState("");
 
   async function guardarPerfil() {
     const user = auth.currentUser;
     if (!user || !nombre.trim()) return;
 
     setGuardando(true);
+    setError("");
+    setGuardado(false);
 
     const slug = nombre.toLowerCase().trim().replace(/\s+/g, "-");
 
-    await setDoc(doc(db, "usuarios", user.uid), {
-      slug,
-      nombre,
-      tipo,
-      bio,
-      email,
-      telefono,
-      uid: user.uid,
-      ...(tipo === "busca-empleo" && { experiencia, estudios, habilidades }),
-    });
-
-    setGuardando(false);
-    setGuardado(true);
+    try {
+      await setDoc(doc(db, "usuarios", user.uid), {
+        slug,
+        nombre,
+        tipo,
+        bio,
+        email,
+        telefono,
+        uid: user.uid,
+        ...(tipo === "busca-empleo" && { experiencia, estudios, habilidades }),
+      });
+      setGuardado(true);
+    } catch {
+      setError("No se pudo guardar el perfil. Intentá de nuevo.");
+    } finally {
+      setGuardando(false);
+    }
   }
 
   return (
@@ -129,6 +136,7 @@ export default function FormularioPerfil() {
       </button>
 
       {guardado && <p className="text-green-600 text-sm">¡Perfil guardado con éxito!</p>}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
     </div>
   );
 }
