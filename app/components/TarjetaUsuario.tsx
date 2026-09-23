@@ -1,13 +1,8 @@
-// app/components/TarjetaUsuario.tsx
-import BotonGuardar from "./BotonGuardar";
+import type { Usuario } from "@/types/usuario";
 
-type TarjetaUsuarioProps = {
-  nombre: string;
-  curso: string;
-  bio: string;
-};
+type Props = Pick<Usuario, "nombre" | "tipo" | "bio" | "habilidades">;
 
-export default function TarjetaUsuario({ nombre, curso, bio }: TarjetaUsuarioProps) {
+export default function TarjetaUsuario({ nombre, tipo, bio, habilidades }: Props) {
   return (
     <div className="group border border-slate-200 rounded-2xl p-4 bg-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
       <div className="flex items-center gap-3">
@@ -18,15 +13,19 @@ export default function TarjetaUsuario({ nombre, curso, bio }: TarjetaUsuarioPro
           <h3 className="font-semibold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">
             {nombre}
           </h3>
-          <p className="text-slate-400 text-xs">{curso}</p>
+          <span
+            className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mt-1 ${
+              tipo === "empleador" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"
+            }`}
+          >
+            {tipo === "empleador" ? "Ofrece empleo" : "Busca empleo"}
+          </span>
         </div>
       </div>
 
       <p className="text-slate-500 text-sm mt-3 line-clamp-2">{bio}</p>
 
-      <div className="mt-4 pt-3 border-t border-slate-100">
-    
-      </div>
+      {habilidades && <p className="text-slate-400 text-xs mt-2 line-clamp-1">🛠️ {habilidades}</p>}
     </div>
   );
 }

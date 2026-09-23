@@ -8,7 +8,7 @@ import BotonLogout from "./BotonLogout";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { usuario, cargando } = useUsuarioActual();
+  const { usuario, firebaseUser, cargando } = useUsuarioActual();
 
   return (
     <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b px-6 py-4 flex items-center justify-between">
@@ -26,8 +26,17 @@ export default function Navbar() {
           Usuarios
         </Link>
 
+        {!cargando && firebaseUser && (
+          <Link
+            href={usuario ? `/usuarios/${usuario.slug}` : "/login"}
+            className="text-slate-600 hover:text-indigo-500 transition-colors"
+          >
+            Mi perfil
+          </Link>
+        )}
+
         {!cargando && (
-          usuario ? (
+          firebaseUser ? (
             <BotonLogout />
           ) : (
             <Link href="/login" className="text-slate-600 hover:text-indigo-500 transition-colors">

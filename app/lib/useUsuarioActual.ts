@@ -2,17 +2,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, type User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/app/lib/firebase";
 import type { Usuario } from "@/types/usuario";
 
 export function useUsuarioActual() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setFirebaseUser(user);
+
       if (!user) {
         setUsuario(null);
         setCargando(false);
@@ -26,5 +29,5 @@ export function useUsuarioActual() {
     return () => unsubscribe();
   }, []);
 
-  return { usuario, cargando };
+  return { usuario, firebaseUser, cargando };
 }

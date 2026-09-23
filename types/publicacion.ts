@@ -8,4 +8,5 @@ export type Publicacion = {
   autorCurso: string;
   texto: string;
   fecha: Timestamp;
+  likes?: string[];
 };

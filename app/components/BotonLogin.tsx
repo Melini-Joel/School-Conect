@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { auth } from "@/app/lib/firebase";
 import {
   signInWithEmailAndPassword,
@@ -15,6 +16,7 @@ export default function BotonLogin() {
   const [error, setError] = useState("");
   const [exito, setExito] = useState("");
   const [cargando, setCargando] = useState(false);
+  const router = useRouter();
 
   async function manejarSubmit() {
     setError("");
@@ -27,8 +29,10 @@ export default function BotonLogin() {
         setExito("¡Sesión iniciada con éxito!");
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
-        setExito("¡Cuenta creada con éxito! Ahora completá tu perfil abajo.");
+        setExito("¡Cuenta creada con éxito!");
       }
+
+      setTimeout(() => router.push("/usuarios"), 1000);
     } catch (err) {
       setError(traducirError((err as { code?: string }).code));
     } finally {
@@ -56,7 +60,6 @@ export default function BotonLogin() {
 
   return (
     <div className="flex flex-col gap-3 max-w-xs">
-      {/* Switch entre Iniciar sesión / Registrarse */}
       <div className="flex bg-slate-100 rounded-lg p-1 text-sm font-medium">
         <button
           onClick={() => {

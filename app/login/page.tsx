@@ -1,6 +1,6 @@
 import BotonLogin from "@/app/components/BotonLogin";
 import BotonLogout from "@/app/components/BotonLogout";
-import FormularioPerfil from "@/app/components/FormularioPerfil";
+import PerfilFormulario from "@/app/components/PerfilFormulario";
 
 export default function LoginPage() {
   return (
@@ -12,10 +12,8 @@ export default function LoginPage() {
           <BotonLogout />
         </div>
       </div>
-      <div>
-        <h2 className="text-xl font-bold mb-4">Completar perfil</h2>
-        <FormularioPerfil />
-      </div>
+
+      <PerfilFormulario />
     </main>
   );
 }
