@@ -6,6 +6,7 @@ import { obtenerUsuarios } from "@/app/lib/obtenerUsuarios";
 import { useUsuarioActual } from "@/app/lib/useUsuarioActual";
 import EditarPerfil from "@/app/components/EditarPerfil";
 import BotonContacto from "@/app/components/BotonConectar";
+import BotonDescargarCV from "@/app/components/BotonDescargarCV";
 import { OPCIONES_EXPERIENCIA, OPCIONES_ESTUDIOS, OPCIONES_HORARIO } from "@/app/lib/opcionesCV";
 import type { Usuario } from "@/types/usuario";
 
@@ -132,11 +133,10 @@ export default function UsuarioDetalle({ params }: PageProps) {
                 </div>
               )}
 
-              {!esMiPerfil && (
-                <div className="mt-6">
-                  <BotonContacto email={usuario.email} telefono={usuario.telefono} />
-                </div>
-              )}
+              <div className="mt-6 flex flex-wrap gap-3">
+                {usuario.tipo === "busca-empleo" && <BotonDescargarCV usuario={usuario} />}
+                {!esMiPerfil && <BotonContacto email={usuario.email} telefono={usuario.telefono} />}
+              </div>
             </>
           )}
         </div>
