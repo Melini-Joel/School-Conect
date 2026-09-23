@@ -60,7 +60,7 @@ export default function BotonLogin() {
 
   return (
     <div className="flex flex-col gap-3 max-w-xs">
-      <div className="flex bg-slate-100 rounded-lg p-1 text-sm font-medium">
+      <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 text-sm font-medium">
         <button
           onClick={() => {
             setModo("login");
@@ -68,7 +68,9 @@ export default function BotonLogin() {
             setExito("");
           }}
           className={`flex-1 py-1.5 rounded-md transition-colors ${
-            modo === "login" ? "bg-white shadow-sm text-indigo-600" : "text-slate-500"
+            modo === "login"
+              ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-300"
+              : "text-slate-500 dark:text-slate-400"
           }`}
         >
           Iniciar sesión
@@ -80,7 +82,9 @@ export default function BotonLogin() {
             setExito("");
           }}
           className={`flex-1 py-1.5 rounded-md transition-colors ${
-            modo === "registro" ? "bg-white shadow-sm text-indigo-600" : "text-slate-500"
+            modo === "registro"
+              ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-300"
+              : "text-slate-500 dark:text-slate-400"
           }`}
         >
           Registrarse
@@ -92,14 +96,14 @@ export default function BotonLogin() {
         placeholder="Correo"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="border rounded-lg p-2"
+        className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg p-2"
       />
       <input
         type="password"
         placeholder="Contraseña"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="border rounded-lg p-2"
+        className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg p-2"
       />
 
       <button
@@ -114,9 +118,9 @@ export default function BotonLogin() {
           : "Crear cuenta"}
       </button>
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="text-red-500 dark:text-red-400 text-sm">{error}</p>}
       {exito && (
-        <p className="text-green-600 text-sm bg-green-50 border border-green-200 rounded-lg p-2">
+        <p className="text-green-600 dark:text-green-400 text-sm bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 rounded-lg p-2">
           {exito}
         </p>
       )}

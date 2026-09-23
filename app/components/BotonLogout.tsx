@@ -18,7 +18,7 @@ export default function BotonLogout() {
     <>
       <button
         onClick={cerrarSesion}
-        className="text-sm text-slate-600 hover:text-red-500 transition-colors"
+        className="text-sm text-slate-600 dark:text-slate-300 hover:text-red-500 transition-colors"
       >
         Cerrar sesión
       </button>

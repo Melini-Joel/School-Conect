@@ -78,24 +78,24 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
   }
 
   return (
-    <div className="border rounded-xl p-4 bg-white flex flex-col gap-3">
-      <h3 className="font-semibold text-sm">Mi perfil</h3>
+    <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 bg-white dark:bg-slate-800 flex flex-col gap-3">
+      <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-100">Mi perfil</h3>
 
       <input
         value={nombre}
         onChange={(e) => setNombre(e.target.value)}
         placeholder="Nombre"
-        className="border rounded-lg p-2 text-sm"
+        className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 text-sm"
       />
 
-      <div className="flex bg-slate-100 rounded-lg p-1 text-sm font-medium">
+      <div className="flex bg-slate-100 dark:bg-slate-900 rounded-lg p-1 text-sm font-medium">
         <button
           type="button"
           onClick={() => setTipo("busca-empleo")}
           className={`flex-1 py-1.5 rounded-md transition-colors ${
             tipo === "busca-empleo"
-              ? "bg-white shadow-sm text-indigo-600"
-              : "text-slate-500"
+              ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-300"
+              : "text-slate-500 dark:text-slate-400"
           }`}
         >
           Busco empleo
@@ -105,8 +105,8 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
           onClick={() => setTipo("empleador")}
           className={`flex-1 py-1.5 rounded-md transition-colors ${
             tipo === "empleador"
-              ? "bg-white shadow-sm text-indigo-600"
-              : "text-slate-500"
+              ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-300"
+              : "text-slate-500 dark:text-slate-400"
           }`}
         >
           Ofrezco empleo
@@ -117,7 +117,7 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
         value={bio}
         onChange={(e) => setBio(e.target.value)}
         placeholder="Presentación breve"
-        className="border rounded-lg p-2 resize-none"
+        className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 resize-none"
         rows={2}
       />
 
@@ -126,13 +126,13 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email de contacto"
-          className="border rounded-lg p-2 text-sm"
+          className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 text-sm"
         />
         <input
           value={telefono}
           onChange={(e) => setTelefono(e.target.value)}
           placeholder="Teléfono"
-          className="border rounded-lg p-2 text-sm"
+          className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 text-sm"
         />
       </div>
 
@@ -142,28 +142,28 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
             value={experiencia}
             onChange={(e) => setExperiencia(e.target.value)}
             placeholder="Experiencia laboral (contá tu historia)"
-            className="border rounded-lg p-2 resize-none"
+            className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 resize-none"
             rows={2}
           />
           <textarea
             value={estudios}
             onChange={(e) => setEstudios(e.target.value)}
             placeholder="Estudios (detalle)"
-            className="border rounded-lg p-2 resize-none"
+            className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 resize-none"
             rows={2}
           />
           <input
             value={habilidades}
             onChange={(e) => setHabilidades(e.target.value)}
             placeholder="Habilidades (separadas por coma)"
-            className="border rounded-lg p-2 text-sm"
+            className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 text-sm"
           />
 
           <div className="grid grid-cols-2 gap-2">
             <select
               value={aniosExperiencia}
               onChange={(e) => setAniosExperiencia(e.target.value)}
-              className="border rounded-lg p-2 text-sm"
+              className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 text-sm"
             >
               <option value="">Años de experiencia</option>
               {OPCIONES_EXPERIENCIA.map((o) => (
@@ -176,7 +176,7 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
             <select
               value={nivelEstudios}
               onChange={(e) => setNivelEstudios(e.target.value)}
-              className="border rounded-lg p-2 text-sm"
+              className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 text-sm"
             >
               <option value="">Nivel de estudios</option>
               {OPCIONES_ESTUDIOS.map((o) => (
@@ -190,7 +190,7 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
           <select
             value={disponibilidadHorario}
             onChange={(e) => setDisponibilidadHorario(e.target.value)}
-            className="border rounded-lg p-2 text-sm"
+            className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 text-sm"
           >
             <option value="">Disponibilidad horaria</option>
             {OPCIONES_HORARIO.map((o) => (
@@ -200,7 +200,7 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
             ))}
           </select>
 
-          <label className="flex items-center gap-2 text-sm text-slate-600">
+          <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
             <input
               type="checkbox"
               checked={disponibleViajar}
@@ -222,13 +222,13 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
         {onCerrar && (
           <button
             onClick={onCerrar}
-            className="text-slate-500 hover:text-slate-700 text-sm px-4 py-2"
+            className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-sm px-4 py-2"
           >
             Cancelar
           </button>
         )}
-        {guardado && <p className="text-green-600 text-sm">¡Guardado!</p>}
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {guardado && <p className="text-green-600 dark:text-green-400 text-sm">¡Guardado!</p>}
+        {error && <p className="text-red-500 dark:text-red-400 text-sm">{error}</p>}
       </div>
     </div>
   );

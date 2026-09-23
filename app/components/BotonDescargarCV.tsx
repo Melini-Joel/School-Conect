@@ -1,11 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { jsPDF } from "jspdf";
+import { FileText, Lock } from "lucide-react";
+import { useUsuarioActual } from "@/app/lib/useUsuarioActual";
 import { OPCIONES_EXPERIENCIA, OPCIONES_ESTUDIOS, OPCIONES_HORARIO } from "@/app/lib/opcionesCV";
 import type { Usuario } from "@/types/usuario";
 
 export default function BotonDescargarCV({ usuario }: { usuario: Usuario }) {
+  const { firebaseUser, cargando } = useUsuarioActual();
   const [generando, setGenerando] = useState(false);
 
   function generarPdf() {
@@ -98,13 +102,28 @@ export default function BotonDescargarCV({ usuario }: { usuario: Usuario }) {
     }
   }
 
+  if (cargando) return null;
+
+  if (!firebaseUser) {
+    return (
+      <Link
+        href="/login"
+        className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg transition-colors duration-300 text-sm font-medium"
+      >
+        <Lock className="w-4 h-4" aria-hidden="true" />
+        Iniciá sesión para descargar el CV
+      </Link>
+    );
+  }
+
   return (
     <button
       onClick={generarPdf}
       disabled={generando}
-      className="bg-white hover:bg-slate-50 text-indigo-600 border border-indigo-200 px-4 py-2 rounded-lg transition-colors duration-300 text-sm font-medium disabled:opacity-50"
+      className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 px-4 py-2 rounded-lg transition-colors duration-300 text-sm font-medium disabled:opacity-50"
     >
-      {generando ? "Generando..." : "📄 Descargar CV (PDF)"}
+      <FileText className="w-4 h-4" aria-hidden="true" />
+      {generando ? "Generando..." : "Descargar CV (PDF)"}
     </button>
   );
 }
