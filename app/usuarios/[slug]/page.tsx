@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import Link from "next/link";
-import { Pencil } from "lucide-react";
+import { Pencil, Eye } from "lucide-react";
+import { doc, updateDoc, increment } from "firebase/firestore";
+import { db } from "@/app/lib/firebase";
 import { obtenerUsuarios } from "@/app/lib/obtenerUsuarios";
 import { useUsuarioActual } from "@/app/lib/useUsuarioActual";
 import EditarPerfil from "@/app/components/EditarPerfil";
@@ -20,11 +22,25 @@ export default function UsuarioDetalle({ params }: PageProps) {
   const { usuario: usuarioActual } = useUsuarioActual();
   const [usuario, setUsuario] = useState<Usuario | null | undefined>(undefined);
   const [editando, setEditando] = useState(false);
+  const visitaContada = useRef(false);
 
   useEffect(() => {
     async function cargar() {
       const usuarios = await obtenerUsuarios();
-      setUsuario(usuarios.find((u) => u.slug === slug) ?? null);
+      const encontrado = usuarios.find((u) => u.slug === slug) ?? null;
+
+      // Contador de visitas: suma 1 cada vez que se abre el perfil
+      if (encontrado && !visitaContada.current) {
+        visitaContada.current = true;
+        try {
+          await updateDoc(doc(db, "usuarios", encontrado.uid), { visitas: increment(1) });
+          encontrado.visitas = (encontrado.visitas ?? 0) + 1;
+        } catch (error) {
+          console.error("No se pudo registrar la visita:", error);
+        }
+      }
+
+      setUsuario(encontrado);
     }
     cargar();
   }, [slug]);
@@ -69,6 +85,10 @@ export default function UsuarioDetalle({ params }: PageProps) {
               >
                 {usuario.tipo === "empleador" ? "Ofrece empleo" : "Busca empleo"}
               </span>
+              <p className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-2">
+                <Eye className="w-4 h-4" aria-hidden="true" />
+                {usuario.visitas ?? 0} visitas
+              </p>
             </div>
 
             {esMiPerfil && !editando && (

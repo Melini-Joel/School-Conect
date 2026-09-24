@@ -13,4 +13,5 @@ export type Usuario = {
   nivelEstudios?: "secundario" | "terciario" | "universitario" | "posgrado";
   disponibilidadHorario?: "tiempo-completo" | "medio-tiempo" | "flexible";
   disponibleViajar?: boolean;
+  visitas?: number;
 };
