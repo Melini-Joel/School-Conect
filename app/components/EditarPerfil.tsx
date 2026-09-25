@@ -3,27 +3,37 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, deleteField } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
 import {
   OPCIONES_EXPERIENCIA,
   OPCIONES_ESTUDIOS,
   OPCIONES_HORARIO,
 } from "@/app/lib/opcionesCV";
-import type { Usuario } from "@/types/usuario";
+import SubirFoto from "@/app/components/SubirFoto";
+import EditorExperiencias, { limpiarExperiencias } from "@/app/components/EditorExperiencias";
+import type { Trabajo, Usuario } from "@/types/usuario";
 
 type Props = {
   usuario: Usuario;
   onCerrar?: () => void;
+  onGuardado?: (usuario: Usuario) => void;
 };
 
-export default function EditarPerfil({ usuario, onCerrar }: Props) {
+export default function EditarPerfil({ usuario, onCerrar, onGuardado }: Props) {
   const [nombre, setNombre] = useState(usuario.nombre);
   const [tipo, setTipo] = useState<Usuario["tipo"]>(usuario.tipo);
   const [bio, setBio] = useState(usuario.bio);
+  const [foto, setFoto] = useState(usuario.foto ?? "");
   const [email, setEmail] = useState(usuario.email ?? "");
   const [telefono, setTelefono] = useState(usuario.telefono ?? "");
-  const [experiencia, setExperiencia] = useState(usuario.experiencia ?? "");
+  // Si el perfil tiene la experiencia vieja en texto libre, la pasamos a un primer trabajo
+  const [experiencias, setExperiencias] = useState<Trabajo[]>(
+    usuario.experiencias ??
+      (usuario.experiencia
+        ? [{ puesto: "", empresa: "", desde: "", hasta: "", descripcion: usuario.experiencia }]
+        : []),
+  );
   const [estudios, setEstudios] = useState(usuario.estudios ?? "");
   const [habilidades, setHabilidades] = useState(usuario.habilidades ?? "");
   const [aniosExperiencia, setAniosExperiencia] = useState(
@@ -50,23 +60,33 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
     setError("");
     setGuardado(false);
 
+    const cambios = {
+      nombre,
+      foto,
+      tipo,
+      bio,
+      email,
+      telefono,
+      ...(tipo === "busca-empleo" && {
+        experiencias: limpiarExperiencias(experiencias),
+        estudios,
+        habilidades,
+        aniosExperiencia,
+        nivelEstudios,
+        disponibilidadHorario,
+        disponibleViajar,
+      }),
+    };
+
     try {
       await updateDoc(doc(db, "usuarios", usuario.uid), {
-        nombre,
-        tipo,
-        bio,
-        email,
-        telefono,
-        ...(tipo === "busca-empleo" && {
-          experiencia,
-          estudios,
-          habilidades,
-          aniosExperiencia,
-          nivelEstudios,
-          disponibilidadHorario,
-          disponibleViajar,
-        }),
+        ...cambios,
+        ...(tipo === "busca-empleo" && { experiencia: deleteField() }),
       });
+      // Avisamos a la página los datos nuevos para que el perfil y el CV se actualicen sin recargar
+      const actualizado = { ...usuario, ...cambios } as Usuario;
+      if (tipo === "busca-empleo") delete actualizado.experiencia;
+      onGuardado?.(actualizado);
       setGuardado(true);
       router.refresh();
       onCerrar?.();
@@ -80,6 +100,8 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
   return (
     <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 bg-white dark:bg-slate-800 flex flex-col gap-3">
       <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-100">Mi perfil</h3>
+
+      <SubirFoto nombre={nombre} foto={foto} onChange={setFoto} />
 
       <input
         value={nombre}
@@ -138,13 +160,7 @@ export default function EditarPerfil({ usuario, onCerrar }: Props) {
 
       {tipo === "busca-empleo" && (
         <>
-          <textarea
-            value={experiencia}
-            onChange={(e) => setExperiencia(e.target.value)}
-            placeholder="Experiencia laboral (contá tu historia)"
-            className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 resize-none"
-            rows={2}
-          />
+          <EditorExperiencias experiencias={experiencias} onChange={setExperiencias} />
           <textarea
             value={estudios}
             onChange={(e) => setEstudios(e.target.value)}

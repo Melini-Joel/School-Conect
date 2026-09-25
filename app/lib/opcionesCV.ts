@@ -18,3 +18,7 @@ export const OPCIONES_HORARIO = [
   { value: "medio-tiempo", label: "Medio tiempo" },
   { value: "flexible", label: "Flexible" },
 ] as const;
+// Arma el período de un trabajo, ej: "2021 – Actualidad"
+export function periodoTrabajo(t: { desde: string; hasta: string }) {
+  return [t.desde, t.hasta].filter((v) => v.trim()).join(" – ");
+}

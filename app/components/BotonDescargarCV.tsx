@@ -5,14 +5,15 @@ import Link from "next/link";
 import { jsPDF } from "jspdf";
 import { FileText, Lock } from "lucide-react";
 import { useUsuarioActual } from "@/app/lib/useUsuarioActual";
-import { OPCIONES_EXPERIENCIA, OPCIONES_ESTUDIOS, OPCIONES_HORARIO } from "@/app/lib/opcionesCV";
+import { fotoParaPdf } from "@/app/lib/cloudinary";
+import { OPCIONES_EXPERIENCIA, OPCIONES_ESTUDIOS, OPCIONES_HORARIO, periodoTrabajo } from "@/app/lib/opcionesCV";
 import type { Usuario } from "@/types/usuario";
 
 export default function BotonDescargarCV({ usuario }: { usuario: Usuario }) {
   const { firebaseUser, cargando } = useUsuarioActual();
   const [generando, setGenerando] = useState(false);
 
-  function generarPdf() {
+  async function generarPdf() {
     setGenerando(true);
 
     try {
@@ -46,6 +47,20 @@ export default function BotonDescargarCV({ usuario }: { usuario: Usuario }) {
         y += lineas.length * 5 + 4;
       }
 
+      // Foto arriba a la derecha; si no se puede descargar, el CV sale igual sin foto
+      const tamanioFoto = 30;
+      let hayFoto = false;
+      if (usuario.foto) {
+        try {
+          const foto = await fotoParaPdf(usuario.foto);
+          const anchoPagina = doc.internal.pageSize.getWidth();
+          doc.addImage(foto, "PNG", anchoPagina - margen - tamanioFoto, margen - 8, tamanioFoto, tamanioFoto);
+          hayFoto = true;
+        } catch (error) {
+          console.error("No se pudo agregar la foto al CV:", error);
+        }
+      }
+
       doc.setFont("helvetica", "bold");
       doc.setFontSize(20);
       doc.text(usuario.nombre, margen, y);
@@ -57,6 +72,8 @@ export default function BotonDescargarCV({ usuario }: { usuario: Usuario }) {
       doc.text("Currículum vitae", margen, y);
       doc.setTextColor(0);
       y += 10;
+      // Que el texto de abajo no se superponga con la foto
+      if (hayFoto) y = Math.max(y, margen - 8 + tamanioFoto + 6);
 
       const contacto = [usuario.email, usuario.telefono].filter(Boolean).join("   ·   ");
       if (contacto) parrafo(contacto);
@@ -66,7 +83,26 @@ export default function BotonDescargarCV({ usuario }: { usuario: Usuario }) {
         parrafo(usuario.bio);
       }
 
-      if (usuario.experiencia) {
+      if (usuario.experiencias && usuario.experiencias.length > 0) {
+        seccion("Experiencia laboral");
+        usuario.experiencias.forEach((t) => {
+          const titulo = [t.puesto, t.empresa].filter(Boolean).join(" · ");
+          if (titulo) {
+            saltoDePaginaSiNecesario(1);
+            doc.setFont("helvetica", "bold");
+            doc.text(titulo, margen, y);
+            doc.setFont("helvetica", "normal");
+            y += 5;
+          }
+          const periodo = periodoTrabajo(t);
+          if (periodo) {
+            doc.setTextColor(120);
+            parrafo(periodo);
+            doc.setTextColor(0);
+          }
+          if (t.descripcion) parrafo(t.descripcion);
+        });
+      } else if (usuario.experiencia) {
         seccion("Experiencia laboral");
         parrafo(usuario.experiencia);
       }

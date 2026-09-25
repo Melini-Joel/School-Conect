@@ -1,15 +1,14 @@
 import { Wrench } from "lucide-react";
+import Avatar from "@/app/components/Avatar";
 import type { Usuario } from "@/types/usuario";
 
-type Props = Pick<Usuario, "nombre" | "tipo" | "bio" | "habilidades">;
+type Props = Pick<Usuario, "nombre" | "foto" | "tipo" | "bio" | "habilidades">;
 
-export default function TarjetaUsuario({ nombre, tipo, bio, habilidades }: Props) {
+export default function TarjetaUsuario({ nombre, foto, tipo, bio, habilidades }: Props) {
   return (
     <div className="group border border-slate-200 dark:border-slate-700 rounded-2xl p-4 bg-white dark:bg-slate-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 shrink-0 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 text-white flex items-center justify-center text-lg font-bold">
-          {nombre.charAt(0).toUpperCase()}
-        </div>
+        <Avatar nombre={nombre} foto={foto} tamanio={48} />
         <div className="min-w-0">
           <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
             {nombre}

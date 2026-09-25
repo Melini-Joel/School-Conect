@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Avatar from "@/app/components/Avatar";
 import { obtenerUsuarios } from "@/app/lib/obtenerUsuarios";
 
 export default async function Home() {
@@ -35,12 +36,13 @@ export default async function Home() {
         <div className="mt-16 flex items-center gap-2 text-sm text-slate-400 dark:text-slate-500">
           <div className="flex -space-x-2">
             {usuarios.slice(0, 4).map((u) => (
-              <div
+              <Avatar
                 key={u.uid}
-                className="w-8 h-8 rounded-full bg-indigo-200 dark:bg-indigo-500/30 border-2 border-white dark:border-slate-900 flex items-center justify-center text-xs font-bold text-indigo-700 dark:text-indigo-200"
-              >
-                {u.nombre.charAt(0).toUpperCase()}
-              </div>
+                nombre={u.nombre}
+                foto={u.foto}
+                tamanio={32}
+                className="border-2 border-white dark:border-slate-900"
+              />
             ))}
           </div>
           <span>

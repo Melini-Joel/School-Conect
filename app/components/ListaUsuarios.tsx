@@ -131,7 +131,7 @@ export default function ListaUsuarios({ usuarios }: { usuarios: Usuario[] }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {filtrados.map((u) => (
           <Link key={u.slug} href={`/usuarios/${u.slug}`}>
-            <TarjetaUsuario nombre={u.nombre} tipo={u.tipo} bio={u.bio} habilidades={u.habilidades} />
+            <TarjetaUsuario nombre={u.nombre} foto={u.foto} tipo={u.tipo} bio={u.bio} habilidades={u.habilidades} />
           </Link>
         ))}
       </div>

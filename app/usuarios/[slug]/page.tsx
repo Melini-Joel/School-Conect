@@ -9,8 +9,10 @@ import { obtenerUsuarios } from "@/app/lib/obtenerUsuarios";
 import { useUsuarioActual } from "@/app/lib/useUsuarioActual";
 import EditarPerfil from "@/app/components/EditarPerfil";
 import BotonContacto from "@/app/components/BotonConectar";
+import Avatar from "@/app/components/Avatar";
+import FotoPerfilEditable from "@/app/components/FotoPerfilEditable";
 import BotonDescargarCV from "@/app/components/BotonDescargarCV";
-import { OPCIONES_EXPERIENCIA, OPCIONES_ESTUDIOS, OPCIONES_HORARIO } from "@/app/lib/opcionesCV";
+import { OPCIONES_EXPERIENCIA, OPCIONES_ESTUDIOS, OPCIONES_HORARIO, periodoTrabajo } from "@/app/lib/opcionesCV";
 import type { Usuario } from "@/types/usuario";
 
 type PageProps = {
@@ -69,9 +71,21 @@ export default function UsuarioDetalle({ params }: PageProps) {
       <div className="mt-4 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         <div className="h-28 bg-gradient-to-r from-indigo-400 to-indigo-600" />
         <div className="px-6 pb-6">
-          <div className="w-24 h-24 rounded-full bg-indigo-500 text-white flex items-center justify-center text-4xl font-bold border-4 border-white dark:border-slate-800 -mt-12">
-            {usuario.nombre.charAt(0).toUpperCase()}
-          </div>
+          {esMiPerfil && !editando ? (
+            <FotoPerfilEditable
+              usuario={usuario}
+              tamanio={96}
+              className="-mt-12"
+              onCambio={(foto) => setUsuario({ ...usuario, foto })}
+            />
+          ) : (
+            <Avatar
+              nombre={usuario.nombre}
+              foto={usuario.foto}
+              tamanio={96}
+              className="border-4 border-white dark:border-slate-800 -mt-12"
+            />
+          )}
 
           <div className="flex items-start justify-between mt-3">
             <div>
@@ -103,16 +117,41 @@ export default function UsuarioDetalle({ params }: PageProps) {
           </div>
 
           {editando ? (
-            <EditarPerfil usuario={usuario} onCerrar={() => setEditando(false)} />
+            <EditarPerfil
+              usuario={usuario}
+              onCerrar={() => setEditando(false)}
+              onGuardado={setUsuario}
+            />
           ) : (
             <>
               <p className="text-slate-600 dark:text-slate-300 mt-4">{usuario.bio}</p>
 
-              {usuario.experiencia && (
+              {usuario.experiencias && usuario.experiencias.length > 0 ? (
                 <div className="mt-4">
                   <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Experiencia</h3>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm mt-1 whitespace-pre-line">{usuario.experiencia}</p>
+                  <ul className="mt-2 flex flex-col gap-3 border-l-2 border-indigo-200 dark:border-indigo-500/30 pl-4">
+                    {usuario.experiencias.map((t, i) => (
+                      <li key={i}>
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                          {[t.puesto, t.empresa].filter(Boolean).join(" · ")}
+                        </p>
+                        {periodoTrabajo(t) && (
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{periodoTrabajo(t)}</p>
+                        )}
+                        {t.descripcion && (
+                          <p className="text-slate-600 dark:text-slate-300 text-sm mt-1 whitespace-pre-line">{t.descripcion}</p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
+              ) : (
+                usuario.experiencia && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Experiencia</h3>
+                    <p className="text-slate-600 dark:text-slate-300 text-sm mt-1 whitespace-pre-line">{usuario.experiencia}</p>
+                  </div>
+                )
               )}
 
               {usuario.estudios && (

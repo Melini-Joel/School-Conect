@@ -4,14 +4,18 @@
 import { useState } from "react";
 import { auth, db } from "@/app/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
+import SubirFoto from "@/app/components/SubirFoto";
+import EditorExperiencias, { limpiarExperiencias } from "@/app/components/EditorExperiencias";
+import type { Trabajo } from "@/types/usuario";
 
 export default function FormularioPerfil() {
   const [nombre, setNombre] = useState("");
   const [tipo, setTipo] = useState<"busca-empleo" | "empleador">("busca-empleo");
   const [bio, setBio] = useState("");
+  const [foto, setFoto] = useState("");
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
-  const [experiencia, setExperiencia] = useState("");
+  const [experiencias, setExperiencias] = useState<Trabajo[]>([]);
   const [estudios, setEstudios] = useState("");
   const [habilidades, setHabilidades] = useState("");
   const [guardando, setGuardando] = useState(false);
@@ -35,10 +39,15 @@ export default function FormularioPerfil() {
         nombre,
         tipo,
         bio,
+        foto,
         email,
         telefono,
         uid: user.uid,
-        ...(tipo === "busca-empleo" && { experiencia, estudios, habilidades }),
+        ...(tipo === "busca-empleo" && {
+          experiencias: limpiarExperiencias(experiencias),
+          estudios,
+          habilidades,
+        }),
       });
       setGuardado(true);
     } catch {
@@ -51,6 +60,8 @@ export default function FormularioPerfil() {
   return (
     <div className="flex flex-col gap-3 max-w-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm">
       <h3 className="font-semibold text-slate-800 dark:text-slate-100">Completar mi perfil</h3>
+
+      <SubirFoto nombre={nombre} foto={foto} onChange={setFoto} />
 
       <input
         placeholder="Nombre"
@@ -109,13 +120,7 @@ export default function FormularioPerfil() {
 
       {tipo === "busca-empleo" && (
         <>
-          <textarea
-            placeholder="Experiencia laboral"
-            value={experiencia}
-            onChange={(e) => setExperiencia(e.target.value)}
-            className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 resize-none"
-            rows={2}
-          />
+          <EditorExperiencias experiencias={experiencias} onChange={setExperiencias} />
           <textarea
             placeholder="Estudios"
             value={estudios}
