@@ -3,8 +3,9 @@
 
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot, type Unsubscribe } from "firebase/firestore";
 import { auth, db } from "@/app/lib/firebase";
+import { migrarContacto } from "@/app/lib/contacto";
 import type { Usuario } from "@/types/usuario";
 
 export function useUsuarioActual() {
@@ -13,7 +14,11 @@ export function useUsuarioActual() {
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    let dejarDeEscucharPerfil: Unsubscribe | undefined;
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      dejarDeEscucharPerfil?.();
+      dejarDeEscucharPerfil = undefined;
       setFirebaseUser(user);
 
       if (!user) {
@@ -21,12 +26,29 @@ export function useUsuarioActual() {
         setCargando(false);
         return;
       }
-      const snap = await getDoc(doc(db, "usuarios", user.uid));
-      setUsuario(snap.exists() ? (snap.data() as Usuario) : null);
-      setCargando(false);
+
+      // Escucha el perfil en tiempo real: si se crea o edita, todos los componentes se enteran
+      setCargando(true);
+      dejarDeEscucharPerfil = onSnapshot(
+        doc(db, "usuarios", user.uid),
+        (snap) => {
+          const datos = snap.exists() ? (snap.data() as Usuario) : null;
+          setUsuario(datos);
+          setCargando(false);
+          if (datos) migrarContacto(datos);
+        },
+        (error) => {
+          console.error("No se pudo leer el perfil:", error);
+          setUsuario(null);
+          setCargando(false);
+        },
+      );
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      dejarDeEscucharPerfil?.();
+    };
   }, []);
 
   return { usuario, firebaseUser, cargando };

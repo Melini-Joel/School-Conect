@@ -6,6 +6,11 @@ export type Trabajo = {
   descripcion: string;
 };
 
+export type Contacto = {
+  email: string;
+  telefono: string;
+};
+
 export type Usuario = {
   slug: string;
   nombre: string;
@@ -14,6 +19,7 @@ export type Usuario = {
   bio: string;
   // URL de la foto de perfil en Cloudinary
   foto?: string;
+  // Solo en perfiles viejos; los nuevos guardan el contacto en "contactos/{uid}"
   email?: string;
   telefono?: string;
   // Texto libre de perfiles viejos; los nuevos usan "experiencias"

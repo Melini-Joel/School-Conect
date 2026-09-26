@@ -1,10 +1,11 @@
 // app/components/EditarPerfil.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { doc, updateDoc, deleteField } from "firebase/firestore";
+import { doc, writeBatch, deleteField } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
+import { obtenerContacto } from "@/app/lib/contacto";
 import {
   OPCIONES_EXPERIENCIA,
   OPCIONES_ESTUDIOS,
@@ -13,6 +14,17 @@ import {
 import SubirFoto from "@/app/components/SubirFoto";
 import EditorExperiencias, { limpiarExperiencias } from "@/app/components/EditorExperiencias";
 import type { Trabajo, Usuario } from "@/types/usuario";
+
+const CAMPOS_CV = [
+  "experiencia",
+  "experiencias",
+  "estudios",
+  "habilidades",
+  "aniosExperiencia",
+  "nivelEstudios",
+  "disponibilidadHorario",
+  "disponibleViajar",
+] as const satisfies readonly (keyof Usuario)[];
 
 type Props = {
   usuario: Usuario;
@@ -25,8 +37,8 @@ export default function EditarPerfil({ usuario, onCerrar, onGuardado }: Props) {
   const [tipo, setTipo] = useState<Usuario["tipo"]>(usuario.tipo);
   const [bio, setBio] = useState(usuario.bio);
   const [foto, setFoto] = useState(usuario.foto ?? "");
-  const [email, setEmail] = useState(usuario.email ?? "");
-  const [telefono, setTelefono] = useState(usuario.telefono ?? "");
+  const [email, setEmail] = useState("");
+  const [telefono, setTelefono] = useState("");
   // Si el perfil tiene la experiencia vieja en texto libre, la pasamos a un primer trabajo
   const [experiencias, setExperiencias] = useState<Trabajo[]>(
     usuario.experiencias ??
@@ -51,10 +63,23 @@ export default function EditarPerfil({ usuario, onCerrar, onGuardado }: Props) {
   const [guardando, setGuardando] = useState(false);
   const [guardado, setGuardado] = useState(false);
   const [error, setError] = useState("");
+  const [contactoCargado, setContactoCargado] = useState(false);
+  const [usuarioInicial] = useState(usuario);
   const router = useRouter();
 
+  // El contacto está en otra colección; hasta tenerlo no dejamos guardar para no borrarlo
+  useEffect(() => {
+    obtenerContacto(usuarioInicial)
+      .then((contacto) => {
+        setEmail(contacto.email);
+        setTelefono(contacto.telefono);
+        setContactoCargado(true);
+      })
+      .catch(() => setError("No se pudieron cargar tus datos de contacto. Recargá la página."));
+  }, [usuarioInicial]);
+
   async function guardarCambios() {
-    if (!nombre.trim()) return;
+    if (!nombre.trim() || !contactoCargado) return;
 
     setGuardando(true);
     setError("");
@@ -65,8 +90,6 @@ export default function EditarPerfil({ usuario, onCerrar, onGuardado }: Props) {
       foto,
       tipo,
       bio,
-      email,
-      telefono,
       ...(tipo === "busca-empleo" && {
         experiencias: limpiarExperiencias(experiencias),
         estudios,
@@ -78,14 +101,25 @@ export default function EditarPerfil({ usuario, onCerrar, onGuardado }: Props) {
       }),
     };
 
+    // Quien ofrece empleo no tiene CV: se borran esos datos. Quien busca, pierde el texto viejo de experiencia.
+    const borrados = tipo === "busca-empleo" ? (["experiencia"] as const) : CAMPOS_CV;
+
     try {
-      await updateDoc(doc(db, "usuarios", usuario.uid), {
+      const lote = writeBatch(db);
+      lote.update(doc(db, "usuarios", usuario.uid), {
         ...cambios,
-        ...(tipo === "busca-empleo" && { experiencia: deleteField() }),
+        email: deleteField(),
+        telefono: deleteField(),
+        ...Object.fromEntries(borrados.map((campo) => [campo, deleteField()])),
       });
+      lote.set(doc(db, "contactos", usuario.uid), { email, telefono });
+      await lote.commit();
+
       // Avisamos a la página los datos nuevos para que el perfil y el CV se actualicen sin recargar
       const actualizado = { ...usuario, ...cambios } as Usuario;
-      if (tipo === "busca-empleo") delete actualizado.experiencia;
+      delete actualizado.email;
+      delete actualizado.telefono;
+      for (const campo of borrados) delete actualizado[campo];
       onGuardado?.(actualizado);
       setGuardado(true);
       router.refresh();
@@ -147,14 +181,16 @@ export default function EditarPerfil({ usuario, onCerrar, onGuardado }: Props) {
         <input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email de contacto"
-          className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 text-sm"
+          placeholder={contactoCargado ? "Email de contacto" : "Cargando..."}
+          disabled={!contactoCargado}
+          className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 text-sm disabled:opacity-50"
         />
         <input
           value={telefono}
           onChange={(e) => setTelefono(e.target.value)}
-          placeholder="Teléfono"
-          className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 text-sm"
+          placeholder={contactoCargado ? "Teléfono" : "Cargando..."}
+          disabled={!contactoCargado}
+          className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-2 text-sm disabled:opacity-50"
         />
       </div>
 
@@ -230,7 +266,7 @@ export default function EditarPerfil({ usuario, onCerrar, onGuardado }: Props) {
       <div className="flex items-center gap-2">
         <button
           onClick={guardarCambios}
-          disabled={guardando}
+          disabled={guardando || !contactoCargado}
           className="bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors duration-300 text-sm font-medium"
         >
           {guardando ? "Guardando..." : "Guardar cambios"}

@@ -7,7 +7,22 @@ import TarjetaUsuario from "@/app/components/TarjetaUsuario";
 import { OPCIONES_EXPERIENCIA, OPCIONES_ESTUDIOS, OPCIONES_HORARIO } from "@/app/lib/opcionesCV";
 import type { Usuario } from "@/types/usuario";
 
-export default function ListaUsuarios({ usuarios }: { usuarios: Usuario[] }) {
+// Solo lo que muestra la lista: todo lo que recibe este componente queda visible en el HTML
+export type UsuarioResumen = Pick<
+  Usuario,
+  | "slug"
+  | "nombre"
+  | "foto"
+  | "tipo"
+  | "bio"
+  | "habilidades"
+  | "aniosExperiencia"
+  | "nivelEstudios"
+  | "disponibilidadHorario"
+  | "disponibleViajar"
+>;
+
+export default function ListaUsuarios({ usuarios }: { usuarios: UsuarioResumen[] }) {
   const [busqueda, setBusqueda] = useState("");
   const [filtroTipo, setFiltroTipo] = useState<"todos" | "busca-empleo" | "empleador">("todos");
   const [filtroExperiencia, setFiltroExperiencia] = useState("");

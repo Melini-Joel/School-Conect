@@ -6,6 +6,7 @@ import { jsPDF } from "jspdf";
 import { FileText, Lock } from "lucide-react";
 import { useUsuarioActual } from "@/app/lib/useUsuarioActual";
 import { fotoParaPdf } from "@/app/lib/cloudinary";
+import { obtenerContacto } from "@/app/lib/contacto";
 import { OPCIONES_EXPERIENCIA, OPCIONES_ESTUDIOS, OPCIONES_HORARIO, periodoTrabajo } from "@/app/lib/opcionesCV";
 import type { Usuario } from "@/types/usuario";
 
@@ -75,8 +76,14 @@ export default function BotonDescargarCV({ usuario }: { usuario: Usuario }) {
       // Que el texto de abajo no se superponga con la foto
       if (hayFoto) y = Math.max(y, margen - 8 + tamanioFoto + 6);
 
-      const contacto = [usuario.email, usuario.telefono].filter(Boolean).join("   ·   ");
-      if (contacto) parrafo(contacto);
+      // Si no se puede leer el contacto, el CV sale igual sin esa línea
+      try {
+        const { email, telefono } = await obtenerContacto(usuario);
+        const contacto = [email, telefono].filter(Boolean).join("   ·   ");
+        if (contacto) parrafo(contacto);
+      } catch (error) {
+        console.error("No se pudo agregar el contacto al CV:", error);
+      }
 
       if (usuario.bio) {
         seccion("Presentación");

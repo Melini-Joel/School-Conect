@@ -3,22 +3,35 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function esDueno(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
     match /usuarios/{userId} {
       // Los perfiles son públicos (listado y página de detalle)
       allow read: if true;
 
-      // Cada usuario crea solo su propio perfil
-      allow create: if request.auth != null
-                    && request.auth.uid == userId
-                    && request.resource.data.uid == userId;
+      // Cada usuario crea solo su propio perfil, sin contacto (va en "contactos") ni visitas
+      allow create: if esDueno(userId)
+                    && request.resource.data.uid == userId
+                    && !request.resource.data.keys().hasAny(['email', 'telefono', 'visitas']);
 
-      // El dueño edita su perfil; cualquier otro solo puede sumar 1 a "visitas"
-      allow update: if (request.auth != null && request.auth.uid == userId)
-                    || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['visitas'])
+      // El dueño edita su perfil, salvo uid, slug y visitas;
+      // cualquier otro solo puede sumar 1 a "visitas"
+      allow update: if (esDueno(userId)
+                        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['uid', 'slug', 'visitas']))
+                    || (!esDueno(userId)
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['visitas'])
                         && request.resource.data.visitas == resource.data.get('visitas', 0) + 1);
 
       // Solo el dueño puede borrar su perfil
-      allow delete: if request.auth != null && request.auth.uid == userId;
+      allow delete: if esDueno(userId);
+    }
+
+    // Email y teléfono: solo los ven usuarios logueados y solo los edita el dueño
+    match /contactos/{userId} {
+      allow read: if request.auth != null;
+      allow write: if esDueno(userId);
     }
   }
 }

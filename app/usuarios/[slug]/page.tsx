@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef, use } from "react";
+import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { Pencil, Eye } from "lucide-react";
 import { doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
-import { obtenerUsuarios } from "@/app/lib/obtenerUsuarios";
+import { obtenerUsuarioPorSlug } from "@/app/lib/obtenerUsuarios";
 import { useUsuarioActual } from "@/app/lib/useUsuarioActual";
 import EditarPerfil from "@/app/components/EditarPerfil";
 import BotonContacto from "@/app/components/BotonConectar";
@@ -21,31 +21,33 @@ type PageProps = {
 
 export default function UsuarioDetalle({ params }: PageProps) {
   const { slug } = use(params);
-  const { usuario: usuarioActual } = useUsuarioActual();
+  const { usuario: usuarioActual, firebaseUser, cargando: cargandoSesion } = useUsuarioActual();
   const [usuario, setUsuario] = useState<Usuario | null | undefined>(undefined);
   const [editando, setEditando] = useState(false);
-  const visitaContada = useRef(false);
 
   useEffect(() => {
     async function cargar() {
-      const usuarios = await obtenerUsuarios();
-      const encontrado = usuarios.find((u) => u.slug === slug) ?? null;
-
-      // Contador de visitas: suma 1 cada vez que se abre el perfil
-      if (encontrado && !visitaContada.current) {
-        visitaContada.current = true;
-        try {
-          await updateDoc(doc(db, "usuarios", encontrado.uid), { visitas: increment(1) });
-          encontrado.visitas = (encontrado.visitas ?? 0) + 1;
-        } catch (error) {
-          console.error("No se pudo registrar la visita:", error);
-        }
-      }
-
-      setUsuario(encontrado);
+      setUsuario(await obtenerUsuarioPorSlug(slug));
     }
     cargar();
   }, [slug]);
+
+  // Contador de visitas: una por perfil y por sesión del navegador, sin contar al dueño
+  const uidPerfil = usuario?.uid;
+  const uidSesion = firebaseUser?.uid;
+  useEffect(() => {
+    if (!uidPerfil || cargandoSesion || uidSesion === uidPerfil) return;
+
+    const clave = `visita-${uidPerfil}`;
+    try {
+      if (sessionStorage.getItem(clave)) return;
+      sessionStorage.setItem(clave, "1");
+    } catch {}
+
+    updateDoc(doc(db, "usuarios", uidPerfil), { visitas: increment(1) })
+      .then(() => setUsuario((u) => u && { ...u, visitas: (u.visitas ?? 0) + 1 }))
+      .catch((error) => console.error("No se pudo registrar la visita:", error));
+  }, [uidPerfil, uidSesion, cargandoSesion]);
 
   if (usuario === undefined) {
     return <main className="flex-1 p-8 text-center text-slate-400 dark:text-slate-500">Cargando...</main>;
@@ -198,7 +200,7 @@ export default function UsuarioDetalle({ params }: PageProps) {
 
               <div className="mt-6 flex flex-wrap gap-3">
                 {usuario.tipo === "busca-empleo" && <BotonDescargarCV usuario={usuario} />}
-                {!esMiPerfil && <BotonContacto email={usuario.email} telefono={usuario.telefono} />}
+                {!esMiPerfil && <BotonContacto usuario={usuario} />}
               </div>
             </>
           )}

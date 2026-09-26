@@ -3,7 +3,8 @@
 
 import { useState } from "react";
 import { auth, db } from "@/app/lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, writeBatch } from "firebase/firestore";
+import { crearSlug } from "@/app/lib/slug";
 import SubirFoto from "@/app/components/SubirFoto";
 import EditorExperiencias, { limpiarExperiencias } from "@/app/components/EditorExperiencias";
 import type { Trabajo } from "@/types/usuario";
@@ -30,18 +31,15 @@ export default function FormularioPerfil() {
     setError("");
     setGuardado(false);
 
-    const base = nombre.toLowerCase().trim().replace(/\s+/g, "-");
-    const slug = `${base}-${user.uid.slice(0, 6)}`;
-
     try {
-      await setDoc(doc(db, "usuarios", user.uid), {
-        slug,
+      // El perfil es público; el contacto va aparte y solo lo leen usuarios logueados
+      const lote = writeBatch(db);
+      lote.set(doc(db, "usuarios", user.uid), {
+        slug: crearSlug(nombre, user.uid),
         nombre,
         tipo,
         bio,
         foto,
-        email,
-        telefono,
         uid: user.uid,
         ...(tipo === "busca-empleo" && {
           experiencias: limpiarExperiencias(experiencias),
@@ -49,6 +47,8 @@ export default function FormularioPerfil() {
           habilidades,
         }),
       });
+      lote.set(doc(db, "contactos", user.uid), { email, telefono });
+      await lote.commit();
       setGuardado(true);
     } catch {
       setError("No se pudo guardar el perfil. Intentá de nuevo.");

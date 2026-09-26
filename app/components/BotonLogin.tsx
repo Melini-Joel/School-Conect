@@ -18,7 +18,8 @@ export default function BotonLogin() {
   const [cargando, setCargando] = useState(false);
   const router = useRouter();
 
-  async function manejarSubmit() {
+  async function manejarSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setError("");
     setExito("");
     setCargando(true);
@@ -27,12 +28,12 @@ export default function BotonLogin() {
       if (modo === "login") {
         await signInWithEmailAndPassword(auth, email, password);
         setExito("¡Sesión iniciada con éxito!");
+        setTimeout(() => router.push("/usuarios"), 1000);
       } else {
+        // Nos quedamos en /login: ahí aparece el formulario para completar el perfil
         await createUserWithEmailAndPassword(auth, email, password);
-        setExito("¡Cuenta creada con éxito!");
+        setExito("¡Cuenta creada con éxito! Completá tu perfil.");
       }
-
-      setTimeout(() => router.push("/usuarios"), 1000);
     } catch (err) {
       setError(traducirError((err as { code?: string }).code));
     } finally {
@@ -59,9 +60,10 @@ export default function BotonLogin() {
   }
 
   return (
-    <div className="flex flex-col gap-3 max-w-xs">
+    <form onSubmit={manejarSubmit} className="flex flex-col gap-3 max-w-xs">
       <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 text-sm font-medium">
         <button
+          type="button"
           onClick={() => {
             setModo("login");
             setError("");
@@ -76,6 +78,7 @@ export default function BotonLogin() {
           Iniciar sesión
         </button>
         <button
+          type="button"
           onClick={() => {
             setModo("registro");
             setError("");
@@ -107,7 +110,7 @@ export default function BotonLogin() {
       />
 
       <button
-        onClick={manejarSubmit}
+        type="submit"
         disabled={cargando}
         className="bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors duration-300"
       >
@@ -124,6 +127,6 @@ export default function BotonLogin() {
           {exito}
         </p>
       )}
-    </div>
+    </form>
   );
 }

@@ -2,6 +2,9 @@ import Link from "next/link";
 import Avatar from "@/app/components/Avatar";
 import { obtenerUsuarios } from "@/app/lib/obtenerUsuarios";
 
+// Leer Firestore en cada visita; si no, Next arma la portada una sola vez al compilar
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const usuarios = await obtenerUsuarios();
 
@@ -20,15 +23,17 @@ export default async function Home() {
       </p>
 
       <div className="flex gap-3 mt-8">
-        <Link href="/usuarios">
-          <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-full shadow-sm hover:shadow-md transition-all duration-300 font-medium">
-            Ver candidatos →
-          </button>
+        <Link
+          href="/usuarios"
+          className="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-full shadow-sm hover:shadow-md transition-all duration-300 font-medium"
+        >
+          Ver candidatos →
         </Link>
-        <Link href="/login">
-          <button className="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-6 py-3 rounded-full transition-colors duration-300 font-medium">
-            Unirme
-          </button>
+        <Link
+          href="/login"
+          className="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-6 py-3 rounded-full transition-colors duration-300 font-medium"
+        >
+          Unirme
         </Link>
       </div>
 
